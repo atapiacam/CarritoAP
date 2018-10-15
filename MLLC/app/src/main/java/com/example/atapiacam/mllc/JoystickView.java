@@ -27,12 +27,16 @@ public class JoystickView extends SurfaceView implements SurfaceHolder.Callback,
         super(context, attrs);
         getHolder().addCallback(this);
         setOnTouchListener(this);
+        if(context instanceof JoystickListener)
+            joystickCallback = (JoystickListener) context;
     }
 
     public JoystickView(Context context, AttributeSet attrs, int style) {
         super(context, attrs, style);
         getHolder().addCallback(this);
         setOnTouchListener(this);
+        if(context instanceof JoystickListener)
+            joystickCallback = (JoystickListener) context;
     }
 
     public interface JoystickListener{
@@ -48,11 +52,12 @@ public class JoystickView extends SurfaceView implements SurfaceHolder.Callback,
 
     private void drawJoystick(float newX, float newY){
         if(getHolder().getSurface().isValid()){
+
             Canvas myCanvas = this.getHolder().lockCanvas();
             Paint colors = new Paint();
             myCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             colors.setARGB(255,50,50,50);
-            myCanvas.drawCircle(newX,newY,baseRadius,colors);
+            myCanvas.drawCircle(centerX,centerY,baseRadius,colors);
             colors.setARGB(255,0,0,255);
             myCanvas.drawCircle(newX,newY,hatRadius,colors);
             getHolder().unlockCanvasAndPost(myCanvas);
@@ -73,7 +78,7 @@ public class JoystickView extends SurfaceView implements SurfaceHolder.Callback,
                 float displacement = (float)Math.sqrt((Math.pow(e.getX()-centerX,2))+Math.pow(e.getY()-centerY,2));
                 if(displacement<baseRadius){
                     drawJoystick(e.getX(),e.getY());
-                    joystickCallback.onJoystickMoved((e.getX() - centerX) / baseRadius, (e.getY()- centerY) / baseRadius, getId());
+                    joystickCallback.onJoystickMoved((e.getX() - centerX) / baseRadius, (e.getY() - centerY) / baseRadius, getId());
                 }
                 else {
                     float ratio = baseRadius / displacement;
@@ -83,9 +88,9 @@ public class JoystickView extends SurfaceView implements SurfaceHolder.Callback,
                     joystickCallback.onJoystickMoved((constrainedX - centerX) / baseRadius, (constrainedY - centerY) / baseRadius, getId());
                 }
             }
-            else{
+            else
                 drawJoystick(centerX,centerY);
-            joystickCallback.onJoystickMoved(0,0,getId());}
+                joystickCallback.onJoystickMoved(0,0,getId());
         }
         return true;
     }
